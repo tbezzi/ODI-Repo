@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SunopsisExport>
+<Admin RepositoryVersion="05.02.02.09" IsLegacyIdCompatible="false" />
+<Encryption algorithm="AES" keyLength="128" exportKeyHash="" keyVect="L9va3gaLbIY6CN+UVhHn3w==" exportKeySalt="de6fa035-7c47-460d-a804-1856dc20e59b" containsCipherText="false"/>
+<Object class="com.sunopsis.dwg.dbobj.SnpKmTemplate">
+		<Field name="FirstDate" type="java.sql.Timestamp"><![CDATA[2022-01-14 05:20:36.0]]></Field>
+	<Field name="FirstUser" type="java.lang.String"><![CDATA[SUNOPSIS_INSTALL]]></Field>
+	<Field name="GlobalId" type="java.lang.String"><![CDATA[bc17c799-d8eb-4fe2-9440-a78c825b817b]]></Field>
+	<Field name="IndChange" type="java.lang.String"><![CDATA[I]]></Field>
+	<Field name="IndIsSeeded" type="java.lang.String"><![CDATA[1]]></Field>
+	<Field name="IndLangTrans" type="java.lang.String"><![CDATA[1]]></Field>
+	<Field name="IndReplNl" type="java.lang.String"><![CDATA[1]]></Field>
+	<Field name="IntVersion" type="com.sunopsis.sql.DbInt"><![CDATA[1]]></Field>
+	<Field name="IKmTemplate" type="com.sunopsis.sql.DbInt"><![CDATA[154]]></Field>
+	<Field name="LangName" type="java.lang.String"><![CDATA[PYTHON]]></Field>
+	<Field name="LastDate" type="java.sql.Timestamp"><![CDATA[2022-01-14 05:20:36.0]]></Field>
+	<Field name="LastUser" type="java.lang.String"><![CDATA[SUNOPSIS_INSTALL]]></Field>
+	<Field name="Name" type="java.lang.String"><![CDATA[SparkPythonRESTSubmit]]></Field>
+	<Field name="TechnoName" type="java.lang.String"><![CDATA[SPARK_PYTHON]]></Field>
+	<Field name="TemplateText" type="java.lang.String"><![CDATA[
+
+
+import java.io.*;
+import oracle.odi.km.exception.OdiKMException;
+import oracle.odi.runtime.agent.processor.impl.Spark_Submit;
+
+    String finalRESTApplicationFile     = null;
+    String finalRESTApplicationPyFile   = null;
+    String finalRESTApplicationJarFiles = null;
+
+<? if ( odiRef.getDataServerInfo("OBJECT_STORAGE_IS_DATA_SERVER", "$[logicalSchemaName]") == "TRUE" ) { ?>
+    finalRESTApplicationFile     = "oci://$[strBucketName]@$[strTenantName]/bdcsce/apps/$[sparkpyFileName]";
+    finalRESTApplicationPyFile   = "oci://$[strBucketName]@$[strTenantName]/bdcsce/$[restApplicationPyFile]";
+    
+    String tempRESTApplicationJarFiles = "$[restAdditionalClasspath]";
+    Boolean firstPass = true;
+
+    if (tempRESTApplicationJarFiles != "null") {
+        StringTokenizer defaultTokenizer = new StringTokenizer(tempRESTApplicationJarFiles, "|");
+        while (defaultTokenizer.hasMoreTokens())
+        {
+          String nextFileFullPath = defaultTokenizer.nextToken();
+          String nextFileName;
+
+          StringTokenizer defaultTokenizer2 = new StringTokenizer(nextFileFullPath, System.getProperty("file.separator"));
+          while (defaultTokenizer2.hasMoreTokens()) {
+            String tFileName = defaultTokenizer2.nextToken();
+            nextFileName = "oci://$[strBucketName]@$[strTenantName]/bdcsce/" + tFileName;
+          }
+
+          if (firstPass) {
+            firstPass = false;
+            finalRESTApplicationJarFiles = nextFileName;
+          }
+          else {
+            finalRESTApplicationJarFiles += ",";
+            finalRESTApplicationJarFiles += nextFileName;
+          }
+        }
+    }
+
+<?}?>  
+<? if ( odiRef.getDataServerInfo("STORAGE_CS_IS_DATA_SERVER", "$[logicalSchemaName]") == "TRUE" ) { ?>
+    finalRESTApplicationFile     = "swift://$[strStorageCSContainer].default/odi/apps/$[sparkpyFileName]";
+    finalRESTApplicationPyFile   = "swift://$[strStorageCSContainer].default/odi/libs/$[restApplicationPyFile]";
+    
+    String tempRESTApplicationJarFiles = "$[restAdditionalClasspath]";
+    Boolean firstPass = true;
+
+    if (tempRESTApplicationJarFiles != "null") {
+        StringTokenizer defaultTokenizer = new StringTokenizer(tempRESTApplicationJarFiles, "|");
+        while (defaultTokenizer.hasMoreTokens())
+        {
+          String nextFileFullPath = defaultTokenizer.nextToken();
+          String nextFileName;
+
+          StringTokenizer defaultTokenizer2 = new StringTokenizer(nextFileFullPath, System.getProperty("file.separator"));
+          while (defaultTokenizer2.hasMoreTokens()) {
+            String tFileName = defaultTokenizer2.nextToken();
+            nextFileName = "swift://$[strStorageCSContainer].default/odi/libs/" + tFileName;
+          }
+
+          if (firstPass) {
+            firstPass = false;
+            finalRESTApplicationJarFiles = nextFileName;
+          }
+          else {
+            finalRESTApplicationJarFiles += ",";
+            finalRESTApplicationJarFiles += nextFileName;
+          }
+        }
+    }
+
+<?}?>  
+    Spark_Submit mySubmit = new Spark_Submit();
+    int retValue = 0;
+
+   retValue = mySubmit.Spark_REST_Submit( "$[restIPAddress]"
+        ,"$[restIdentityDomain]"
+        ,"$[restServiceInstance]"
+        ,"$[restUserName]"
+        ,"$[restPassword]"
+        ,"$[restMappingName]"
+        ,"$[restMappingNameLong]"
+        ,"batch"
+        ,"pyspark"
+        ,"$[restDriverCores]"
+        ,"$[restTotalExecutorCores]"
+        ,"$[restNumExecutors]"
+        ,"$[restDriverMemory]"
+        ,"$[restExecutorMemory]"
+        ,finalRESTApplicationFile
+        ,finalRESTApplicationPyFile
+        ,finalRESTApplicationJarFiles 
+        ,"api");
+
+        if (retValue != 0) {
+            String exceptionMessage = "ODIKM-SPARK-REST-10000: " + mySubmit.getRetJSONValue();
+System.out.println("Exception Error Message : " + exceptionMessage);
+            throw new OdiKMException("ODIKM-SPARK-REST-10000", "Spark REST Submit encountered exception: {0} ", [exceptionMessage])
+        }
+
+/***************************************/
+/***************************************/
+
+     ]]></Field>
+	<Field name="TemplateVersion" type="java.lang.String">null</Field>
+</Object>
+<Object class="com.sunopsis.dwg.dbobj.SnpKmTemplateJoin">
+		<Field name="GlobalId" type="java.lang.String"><![CDATA[9c80b429-c8b3-442d-b783-be583ea418b1]]></Field>
+	<Field name="ISnpKmTemplate" type="com.sunopsis.sql.DbInt"><![CDATA[154]]></Field>
+	<Field name="ISnpTrt" type="com.sunopsis.sql.DbInt"><![CDATA[144]]></Field>
+</Object>
+<Object class="com.sunopsis.dwg.dbobj.SnpKmTemplateJoin">
+		<Field name="GlobalId" type="java.lang.String"><![CDATA[952af49f-c010-4e6b-92e2-cfcfd6533d86]]></Field>
+	<Field name="ISnpKmTemplate" type="com.sunopsis.sql.DbInt"><![CDATA[154]]></Field>
+	<Field name="ISnpTrt" type="com.sunopsis.sql.DbInt"><![CDATA[143]]></Field>
+</Object>
+<Object class="com.sunopsis.dwg.dbobj.SnpFKXRef">
+		<Field name="RefKey" type="java.lang.String"><![CDATA[SNP_TRT.144]]></Field>
+	<Field name="RefObjGlobalId" type="java.lang.String"><![CDATA[995beb67-0645-4aa4-bb49-5bce5ab0c79a]]></Field>
+ <Field name="RefObjFQName" type="java.lang.String"><![CDATA[LKM Spark to Storage Cloud Service]]></Field>
+ <Field name="RefObjFQType" type="java.lang.String"><![CDATA[SNP_TRT]]></Field>
+ <Field name="RefObjFQNameLengths" type="java.lang.String"><![CDATA[34]]></Field>
+</Object>
+<Object class="com.sunopsis.dwg.dbobj.SnpFKXRef">
+		<Field name="RefKey" type="java.lang.String"><![CDATA[SNP_KMTEMPLATE.154]]></Field>
+	<Field name="RefObjGlobalId" type="java.lang.String"><![CDATA[bc17c799-d8eb-4fe2-9440-a78c825b817b]]></Field>
+ <Field name="RefObjFQName" type="java.lang.String"><![CDATA[SparkPythonRESTSubmit]]></Field>
+ <Field name="RefObjFQType" type="java.lang.String"><![CDATA[SNP_KMTEMPLATE]]></Field>
+ <Field name="RefObjFQNameLengths" type="java.lang.String"><![CDATA[21]]></Field>
+</Object>
+<Object class="com.sunopsis.dwg.dbobj.SnpFKXRef">
+		<Field name="RefKey" type="java.lang.String"><![CDATA[SNP_TRT.143]]></Field>
+	<Field name="RefObjGlobalId" type="java.lang.String"><![CDATA[dc7106dd-f608-4749-bd72-076f94908725]]></Field>
+ <Field name="RefObjFQName" type="java.lang.String"><![CDATA[LKM Spark to Object Storage]]></Field>
+ <Field name="RefObjFQType" type="java.lang.String"><![CDATA[SNP_TRT]]></Field>
+ <Field name="RefObjFQNameLengths" type="java.lang.String"><![CDATA[27]]></Field>
+</Object>
+<Object class="com.sunopsis.dwg.DwgExportSummary">
+		<Field name="ExpTxtNb" type="com.sunopsis.sql.DbInt"><![CDATA[0]]></Field>
+	<Field name="InstObjNb" type="com.sunopsis.sql.DbInt"><![CDATA[0]]></Field>
+	<Field name="JoinColNb" type="com.sunopsis.sql.DbInt"><![CDATA[0]]></Field>
+	<Field name="JoinNb" type="com.sunopsis.sql.DbInt"><![CDATA[0]]></Field>
+	<Field name="KeyColNb" type="com.sunopsis.sql.DbInt"><![CDATA[0]]></Field>
+	<Field name="KeyNb" type="com.sunopsis.sql.DbInt"><![CDATA[0]]></Field>
+	<Field name="LinkDiagNb" type="com.sunopsis.sql.DbInt"><![CDATA[0]]></Field>
+	<Field name="MorigTxtNb" type="com.sunopsis.sql.DbInt"><![CDATA[0]]></Field>
+	<Field name="MtxtNb" type="com.sunopsis.sql.DbInt"><![CDATA[0]]></Field>
+	<Field name="OrigTxtNb" type="com.sunopsis.sql.DbInt"><![CDATA[0]]></Field>
+	<Field name="OtherObjectsNb" type="com.sunopsis.sql.DbInt"><![CDATA[3]]></Field>
+	<Field name="PlanAgentNb" type="com.sunopsis.sql.DbInt"><![CDATA[0]]></Field>
+	<Field name="StepNb" type="com.sunopsis.sql.DbInt"><![CDATA[0]]></Field>
+	<Field name="TxtNb" type="com.sunopsis.sql.DbInt"><![CDATA[0]]></Field>
+	<Field name="UeOrigNb" type="com.sunopsis.sql.DbInt"><![CDATA[0]]></Field>
+	<Field name="UeUsedNb" type="com.sunopsis.sql.DbInt"><![CDATA[0]]></Field>
+	<Field name="VarPlanAgentNb" type="com.sunopsis.sql.DbInt"><![CDATA[0]]></Field>
+	<Field name="ScenTxtNb" type="com.sunopsis.sql.DbInt"><![CDATA[0]]></Field>
+	<Field name="OdiVersion" type="java.lang.String"><![CDATA[12.2.1]]></Field>
+	<Field name="OriginRepositoryID" type="com.sunopsis.sql.DbInt"><![CDATA[1]]></Field>
+	<Field name="RepositoryVersion" type="java.lang.String"><![CDATA[05.02.02.09]]></Field>
+</Object>
+</SunopsisExport>
