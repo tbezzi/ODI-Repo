@@ -18,6 +18,10 @@ jobs:
         run: choco install tabular-editor
         shell: cmd
         
+      - name: Step 2.1 - Execute Tabular Editor
+        run: start /wait TabularEditor.exe
+        shell: cmd
+        
       - name: Step 3 - Add artifacts to publish to the temp folder
         run: |
           cd downloads
