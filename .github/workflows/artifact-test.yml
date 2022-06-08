@@ -17,6 +17,15 @@ jobs:
       - name: Step 2 - Install Tabular Editor
         run: choco install tabular-editor
         shell: cmd
+
+      - name: Step 3 - Checkout repo
+        uses: actions/checkout@v3
+        
+      - name: Step 3bis - Variables
+        run: |
+          echo %GITHUB_WORKSPACE%
+          echo ${{ github.token }}
+        shell: cmd
         
       - name: Step 2.1 - Execute Tabular Editor
         run: |
