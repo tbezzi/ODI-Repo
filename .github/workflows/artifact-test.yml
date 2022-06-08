@@ -22,6 +22,11 @@ jobs:
         run: |
           start "TABULAR" /WAIT "C:\Program Files (x86)\Tabular Editor\TabularEditor.exe"  /?
         shell: cmd
+      
+      - name: Step 2.2 - Execute Tabular Editor with PowerShell
+        run: |
+          $p = Start-Process -filePath "C:\Program Files (x86)\Tabular Editor\TabularEditor.exe" -Wait -NoNewWindow -PassThru -ArgumentList "/?"
+        shell: pwsh
         
       - name: Step 3 - Add artifacts to publish to the temp folder
         run: |
